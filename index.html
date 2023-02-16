@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Three JS</title>
+
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+	<script type="text/javascript" src="js/main.js"></script>
+
+</head>
+
+<body>
+
+	<canvas class="webgl-2"></canvas>
+
+	<script type="module">
+
+	import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r122/examples/jsm/controls/OrbitControls.js';
+	
+	// import gsap from "gsap";
+	// import gsap from "https://cdn.skypack.dev/gsap@3.5.1";
+
+
+	//Scene
+	const scene = new THREE.Scene();
+
+
+	//Create our sphere
+	const geometry = new THREE.SphereGeometry( 6, 64, 64 );
+	const material = new THREE.MeshPhongMaterial();
+	const mesh = new THREE.Mesh( geometry, material );
+
+
+	material.map = new THREE.TextureLoader().load('https://images.unsplash.com/photo-1596366799705-ad1815b55423?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=775&q=80');
+	material.bumpMap = new THREE.TextureLoader().load('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/9b7029c3-9717-4658-9066-11c30aa24029/dcsav34-0c691ac5-a773-41e3-aba7-ea02a75cba7a.png/v1/fill/w_1264,h_632,q_70,strp/mars_elevation_map_by_oleg_pluton_dcsav34-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NjQwIiwicGF0aCI6IlwvZlwvOWI3MDI5YzMtOTcxNy00NjU4LTkwNjYtMTFjMzBhYTI0MDI5XC9kY3NhdjM0LTBjNjkxYWM1LWE3NzMtNDFlMy1hYmE3LWVhMDJhNzVjYmE3YS5wbmciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.N0I6NVsFA7ufqoWYtjAifIKCOmtn13UN0VT8flx0A30');
+
+	material.bumpScale = 5.015;
+
+
+	scene.add( mesh );
+	    
+	//Sizes
+	const sizes = {
+	    width: window.innerWidth,
+	    height: window.innerHeight,
+	}
+	    
+	//Light
+	const light = new THREE.PointLight( 0xffffff, 1, 100 );
+	light.position.set( -20, 5, 10 ); 
+	const ambientlight = new THREE.AmbientLight( 0xffffff, 1, 100 );                                              
+	scene.add( light, ambientlight );                                                   
+	                                                  
+	//Camera
+	const camera = new THREE.PerspectiveCamera( 65, sizes.width / sizes.height, 1, 100 );
+	camera.position.z = 20;                                           
+	scene.add( camera );
+
+	                                                  
+
+	//Renderer
+	const canvas = document.querySelector('.webgl-2');
+	const renderer = new THREE.WebGLRenderer({canvas}); 
+	renderer.setSize( sizes.width, sizes.height );
+	renderer.setPixelRatio( 3 );
+	renderer.render( scene, camera );
+	    
+	//OrbitControl
+	const controls = new OrbitControls( camera, canvas );
+	controls.enableDamping = true;
+	controls.enablePan = false;
+	controls.enableZoom = false;
+	controls.autoRotate = true;
+	controls.autoRotateSpeed = 3;
+
+
+	const loader = new THREE.TextureLoader();
+	const textureSphereBg = loader.load('https://i.ibb.co/4gHcRZD/bg3-je3ddz.jpg');
+
+
+	/*    Sphere  Background   */
+    textureSphereBg.anisotropy = 16;
+    let geometrySphereBg = new THREE.SphereGeometry( 40, 100, 100 );
+    let materialSphereBg = new THREE.MeshBasicMaterial({
+        side: THREE.BackSide,
+        map: textureSphereBg,
+    });
+    const sphereBg = new THREE.Mesh( geometrySphereBg, materialSphereBg );
+    scene.add(sphereBg);
+	    
+	//Resize
+	window.addEventListener( 'resize', () => {
+	    //Update Sizes
+	    sizes.width = window.innerWidth;
+	    sizes.height = window.innerHeight;
+	    
+	    //Update Camera
+	    camera.updateProjectionMatrix(  );
+	    camera.aspect = sizes.width / sizes.height;
+	    renderer.setSize( sizes.width, sizes.height );
+	} );
+	    
+	const loop = () => {
+	    controls.update();
+	    renderer.render( scene, camera );
+	    window.requestAnimationFrame( loop );
+	};
+	loop();
+	    
+	// Timeline magic
+	const tl = gsap.timeline({ defaults: { duration: 1 } });
+	tl.fromTo( mesh.scale, { z:0, x:0, y:0 }, { z:1, x:0.3, y:1 } );
+
+
+	//Mouse Animation color
+	let mouseDown = false;
+	let rgb = [];
+	window.addEventListener( 'mousedown', () => (mouseDown = true) );
+	window.addEventListener( 'mouseup', () => (mouseDown = false) );
+
+	window.addEventListener( 'mousemove', (e) => {
+		if (mouseDown) {
+			rgb = [
+				Math.round((e.pageX / sizes.width) * 255),
+				Math.round((e.pageY / sizes.height) * 255),
+				150,
+			];
+
+			//Lets animate
+			let newColor = new THREE.Color( `rgb(${rgb.join(',')})` ); 
+			// new THREE.Color(`rgb(0, 100, 150)`);
+			gsap.to( mesh.material.color, {r:newColor.r, g:newColor.g, b:newColor.b} );
+		}
+	} );
+
+
+	
+    
+	</script>
+
+
+	<!-- Three js CDN -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.min.js" integrity="sha512-6p9lGA4Cm89KiwN1CixiOVQU2H9e13LeYoN6/Hj/qoUhtrMW5vNiqQz9Z96Z7/I8u89ghL6SPBz9na5HFVzF3g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.js" integrity="sha512-dXieTy8ru45g3jmwlQfSGHBu2/xdB5yxjhx+TVRGlCDWx+IJSbs8Pl+E+2TIxw2pRSAIqAhNwAwKoUuV4IEkmA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.module.js" integrity="sha512-4ntGvGog+KWoJbY0k+GOpc0u84yrqufOI2UraqHZfNgcAxrGrCR/LIcHTh/RPt6DOnrZddkvyBYnW3QyUhfGzA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.149.0/three.module.min.js" integrity="sha512-6RwHnlVJfX8UV0AlxpCxgbyExfKD19hiSewVxEQXRV1sCZwbYwAfXzMPdr+8rTMN3MWXYuQmj55vOjlermnj5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<!-- End Three js CDN -->
+
+</body>
+
+</html>
